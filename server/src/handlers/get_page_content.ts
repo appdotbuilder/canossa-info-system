@@ -1,18 +1,29 @@
 
+import { db } from '../db';
+import { pageContentsTable } from '../db/schema';
 import { type GetPageBySlugInput, type PageContent } from '../schema';
+import { eq, and } from 'drizzle-orm';
 
 export const getPageContent = async (input: GetPageBySlugInput): Promise<PageContent | null> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching page content by slug (e.g., 'about', 'education-student').
-    // Should return null if the page doesn't exist or is not published.
-    return Promise.resolve({
-        id: 1,
-        page_slug: input.slug,
-        title: 'Sample Page Title',
-        content: 'Sample page content',
-        meta_description: 'Sample meta description',
-        is_published: true,
-        created_at: new Date(),
-        updated_at: new Date()
-    } as PageContent);
+  try {
+    const results = await db.select()
+      .from(pageContentsTable)
+      .where(
+        and(
+          eq(pageContentsTable.page_slug, input.slug),
+          eq(pageContentsTable.is_published, true)
+        )
+      )
+      .limit(1)
+      .execute();
+
+    if (results.length === 0) {
+      return null;
+    }
+
+    return results[0];
+  } catch (error) {
+    console.error('Failed to get page content:', error);
+    throw error;
+  }
 };

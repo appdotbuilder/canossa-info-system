@@ -1,9 +1,21 @@
 
+import { db } from '../db';
+import { campusActivitiesTable } from '../db/schema';
 import { type DeleteActivityInput } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export const deleteCampusActivity = async (input: DeleteActivityInput): Promise<{ success: boolean }> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is deleting a campus activity from the database by ID.
-    // Should return success status indicating whether the deletion was successful.
-    return Promise.resolve({ success: true });
+  try {
+    // Delete the campus activity by ID
+    const result = await db.delete(campusActivitiesTable)
+      .where(eq(campusActivitiesTable.id, input.id))
+      .returning()
+      .execute();
+
+    // Return success status based on whether a record was deleted
+    return { success: result.length > 0 };
+  } catch (error) {
+    console.error('Campus activity deletion failed:', error);
+    throw error;
+  }
 };

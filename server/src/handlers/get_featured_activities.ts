@@ -1,9 +1,26 @@
 
+import { db } from '../db';
+import { campusActivitiesTable } from '../db/schema';
 import { type CampusActivity } from '../schema';
+import { eq, and, desc } from 'drizzle-orm';
 
 export const getFeaturedActivities = async (): Promise<CampusActivity[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching only featured and published campus activities
-    // for display on the home page, limited to a reasonable number (e.g., 5-10 activities).
-    return [];
+  try {
+    const results = await db.select()
+      .from(campusActivitiesTable)
+      .where(
+        and(
+          eq(campusActivitiesTable.is_featured, true),
+          eq(campusActivitiesTable.is_published, true)
+        )
+      )
+      .orderBy(desc(campusActivitiesTable.activity_date))
+      .limit(6)
+      .execute();
+
+    return results;
+  } catch (error) {
+    console.error('Failed to fetch featured activities:', error);
+    throw error;
+  }
 };
